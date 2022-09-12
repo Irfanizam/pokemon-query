@@ -1,39 +1,32 @@
-import axios from "axios";
-import { ReactElement, JSXElementConstructor, ReactFragment, ReactPortal } from "react";
+import React, { useState } from "react";
 import { useQuery } from "react-query";
+import Pokemon from "./name";
 
 
-function usePokemonList() {
-    return useQuery('pokemon', async () => {
-      const {data} = await axios.get('https://pokeapi.co/api/v2/pokemon?offset=0&limit=50');
-      return data.results;
-    });
-  }
+const fetchNames = async () => {
+    const res = await fetch('https://pokeapi.co/api/v2/pokemon/')
+    return res.json();
+}
 
-  interface Pokemons {
-    setPokemon?: any;
-  }
-
-  const PokemonList: React.FC<Pokemons> = ({setPokemon}) => {
-    const {isLoading, data} = usePokemonList();
-    return (
-      <div>
-        {isLoading ? (
-          <p>loading...</p>
-        ) : (
-          <ul>
-            {data.map((pokemon: { name: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | ReactFragment | ReactPortal | null | undefined; }, i:number) => (
-              <li key={i} >
-                <a onClick={() => setPokemon(pokemon.name)} href="#">
-                  {pokemon.name}
-                </a>
-              </li>
-            ))}
-            
-          </ul>
-        )}
-      </div>
-    );
-  }
-
-  export default PokemonList;
+const Names = () => {
+    const {data, status} = useQuery('names', fetchNames);
+console.log(data);
+return (
+    <div>
+        <h1>Name</h1>
+        
+        {status === 'loading' && (
+                <div>Loading data ...</div>
+            )}
+            {status === 'error' && (
+                <div>Error fetching data</div>
+            )}
+            {status === 'success' && (
+                <div> 
+                {data.results.map((pokemon: { name: string}) => <Pokemon key={pokemon.name} pokemon={pokemon} />)}
+                </div>
+            )}
+    </div>
+);
+}
+export default Names;
